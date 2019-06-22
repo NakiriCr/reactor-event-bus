@@ -63,7 +63,7 @@ publishing {
                 // artifact description
                 description = 'Reactor Event Bus'
                 // artifact homepage
-                url = 'https://gitlab.yanzx-dev.cn/VirtualCry/reactor-event-bus'
+                url = 'https://github.com/virtualcry/reactor-event-bus'
                 // licenses
                 licenses {
                     license {
@@ -80,9 +80,9 @@ publishing {
                 }
                 // scm
                 scm {
-                    url = 'https://gitlab.yanzx-dev.cn/VirtualCry/reactor-event-bus'
-                    connection = 'scm:git:https://gitlab.yanzx-dev.cn/VirtualCry/reactor-event-bus.git'
-                    developerConnection = 'scm:git:https://gitlab.yanzx-dev.cn/VirtualCry/reactor-event-bus.git'
+                    url = 'https://github.com/virtualcry/reactor-event-bus'
+                    connection = 'scm:git:https://github.com/virtualcry/reactor-event-bus.git'
+                    developerConnection = 'scm:git:https://github.com/virtualcry/reactor-event-bus.git'
                 }
             }
         }
