@@ -51,11 +51,11 @@ public final class EventRouter {
 
 
     /**
-     * Get one kind of {@link EventProcessor} by {@link Class<Event> event type}.
+     * Get one kind of {@link EventProcessor} by {@literal Class<Event> event type}.
      *
-     * @param eventType The {@link Class<T>} to be used for routing.
+     * @param eventType The {@literal Class<T>} to be used for routing.
      * @param <T> Type of {@link Event}
-     * @return The event processor {@link EventProcessor<T>} to handle event.
+     * @return The event processor {@link EventProcessor} to handle event.
      */
     public <T extends Event> EventProcessor<T> route(Class<T> eventType) {
         return this.processorStore.computeIfAbsent(eventType, tEventType -> new EventProcessor<>(env));
