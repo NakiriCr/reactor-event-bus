@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  * @author VirtualCry
  */
 public final class EventRouter {
-    private final Logger logger;
+    private final Logger                                logger;
 
     private final Environment                           env;
     private final EventRecorder<Event>                  recorder;
@@ -53,9 +53,9 @@ public final class EventRouter {
     /**
      * Get one kind of {@link EventProcessor} by {@link Class<Event> event type}.
      *
-     * @param eventType
-     * @param <T>
-     * @return
+     * @param eventType The {@link Class<T>} to be used for routing.
+     * @param <T> Type of {@link Event}
+     * @return The event processor {@link EventProcessor<T>} to handle event.
      */
     public <T extends Event> EventProcessor<T> route(Class<T> eventType) {
         return this.processorStore.computeIfAbsent(eventType, tEventType -> new EventProcessor<>(env));
