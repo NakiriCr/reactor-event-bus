@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class EventBus implements Bus {
 
-    private final EventRouter eventRouter;
+    private final EventRouter               eventRouter;
 
 
     private EventBus(Environment env) {

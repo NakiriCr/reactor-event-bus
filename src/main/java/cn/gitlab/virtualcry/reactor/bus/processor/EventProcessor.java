@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
  * @author VirtualCry
  */
 public final class EventProcessor<T extends Event> {
-    private final Logger logger;
+    private final Logger                                logger;
 
-    private final Environment env;
-    private final FluxProcessor<T, T> eventReceiver;
+    private final Environment                           env;
+    private final FluxProcessor<T, T>                   eventReceiver;
     private final Map<SubscriberID, Disposable>         subscriberDisposables;
 
 

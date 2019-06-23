@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 @Builder
 public final class EventSubscriber<T extends Event> implements Serializable {
 
-    private final SubscriberID id;
+    private final SubscriberID                      id;
     private final EventConsumer<? super T>          eventConsumer;
     private final BiConsumer<? super Throwable, ? super T> errorConsumer;
     private final Runnable                          completeConsumer;
