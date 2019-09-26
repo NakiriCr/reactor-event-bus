@@ -6,3 +6,13 @@
 ![Maven Central](https://img.shields.io/maven-central/v/com.github.virtualcry/reactor-event-bus.svg)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/snapshots/https/oss.sonatype.org/com.github.virtualcry/reactor-event-bus.svg)
 
+## Introduction
+Event bus is a centralized event processing mechanism and an implementation of publish-subscribe mode.
+It allows different components to communicate with each other without interdependence and achieves decoupling between components.
+<br><br>
+![avatar](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/raw/master/images/event-bus-architecture.png)
+
+## Features
+* Adapt to Reactor3.X
+* Senseless communication
+* ...
