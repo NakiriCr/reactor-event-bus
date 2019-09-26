@@ -10,8 +10,8 @@ import cn.gitlab.virtualcry.reactor.bus.spec.EventProcessorComponentSpec;
  */
 public interface Environment {
 
-    Environment ASYNCHRONOUS  = new AsynchronousEnvironment();
-    Environment SYNCHRONOUS = new SynchronousEnvironment();
+    Environment ASYNCHRONOUS = new AsynchronousEnvironment();
+    Environment SYNCHRONOUS  = new SynchronousEnvironment();
 
 
     /**
