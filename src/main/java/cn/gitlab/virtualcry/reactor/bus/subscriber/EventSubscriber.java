@@ -36,8 +36,8 @@ public final class EventSubscriber<T extends Event> implements Serializable {
         this.id = (Objects.isNull(subscriberID)) ? SubscriberID.create() : subscriberID;
         this.eventConsumer = (Objects.isNull(eventConsumer)) ? t -> { } : eventConsumer;
         this.errorConsumer = (Objects.isNull(errorConsumer)) ? (throwable, t) -> { } : errorConsumer;
-        this.completeConsumer = completeConsumer;
-        this.subscriptionConsumer = subscriptionConsumer;
+        this.completeConsumer = (Objects.isNull(completeConsumer)) ? () -> { } : completeConsumer;
+        this.subscriptionConsumer = (Objects.isNull(subscriptionConsumer)) ? t -> { } : subscriptionConsumer;
     }
 
     @Override

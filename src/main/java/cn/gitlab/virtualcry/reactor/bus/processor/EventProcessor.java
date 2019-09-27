@@ -86,13 +86,14 @@ public final class EventProcessor<T extends Event> {
                         .doOnSubscribe(subscription -> {
                             if (logger.isDebugEnabled())
                                 logger.debug("Subscriber { " + subscriberID.getId() + " } subscribed.");
+                            subscriber.getSubscriptionConsumer().accept(subscription);
                         })
-                        .subscribe(
-                                event -> { },
-                                throwable -> { },
-                                subscriber.getCompleteConsumer(),
-                                subscriber.getSubscriptionConsumer()
-                        );
+                        .doOnComplete(() -> {
+                            if (logger.isDebugEnabled())
+                                logger.debug("Subscriber { " + subscriberID.getId() + " } onCompleted.");
+                            subscriber.getCompleteConsumer().run();
+                        })
+                        .subscribe();
             }
         });
     }
