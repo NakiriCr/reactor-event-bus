@@ -13,6 +13,6 @@ It allows different components to communicate with each other without interdepen
 ![avatar](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/raw/master/images/event-bus-architecture.png)
 
 ## Features
-* Adapt to Reactor3.X
+* Adapt to `Reactor3.X`
 * Senseless communication
 * ...

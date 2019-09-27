@@ -12,6 +12,6 @@
 ![avatar](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/raw/master/images/event-bus-architecture.png)
 
 ## 特性
-* 适配 Reactor3.X
+* 适配 `Reactor3.X`
 * 零感知通信
 * ...
