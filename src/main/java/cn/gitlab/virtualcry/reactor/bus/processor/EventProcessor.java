@@ -93,6 +93,11 @@ public final class EventProcessor<T extends Event> {
                                 logger.debug("Subscriber { " + subscriberID.getId() + " } onCompleted.");
                             subscriber.getCompleteConsumer().run();
                         })
+                        .doOnCancel(() -> {
+                            if (logger.isDebugEnabled())
+                                logger.debug("Subscriber { " + subscriberID.getId() + " } onCanceled.");
+                            subscriber.getCancelConsumer().run();
+                        })
                         .subscribe();
             }
         });

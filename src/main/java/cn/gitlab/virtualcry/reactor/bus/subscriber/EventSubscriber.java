@@ -25,6 +25,7 @@ public final class EventSubscriber<T extends Event> implements Serializable {
     private final EventConsumer<? super T>          eventConsumer;
     private final BiConsumer<? super Throwable, ? super T> errorConsumer;
     private final Runnable                          completeConsumer;
+    private final Runnable                          cancelConsumer;
     private final Consumer<? super Subscription>    subscriptionConsumer;
 
     public EventSubscriber(
@@ -32,11 +33,13 @@ public final class EventSubscriber<T extends Event> implements Serializable {
             @Nullable EventConsumer<? super T> eventConsumer,
             @Nullable BiConsumer<? super Throwable, ? super T> errorConsumer,
             @Nullable Runnable completeConsumer,
+            @Nullable Runnable cancelConsumer,
             @Nullable Consumer<? super Subscription> subscriptionConsumer) {
         this.id = (Objects.isNull(subscriberID)) ? SubscriberID.create() : subscriberID;
         this.eventConsumer = (Objects.isNull(eventConsumer)) ? t -> { } : eventConsumer;
         this.errorConsumer = (Objects.isNull(errorConsumer)) ? (throwable, t) -> { } : errorConsumer;
         this.completeConsumer = (Objects.isNull(completeConsumer)) ? () -> { } : completeConsumer;
+        this.cancelConsumer = (Objects.isNull(cancelConsumer)) ? () -> { } : cancelConsumer;
         this.subscriptionConsumer = (Objects.isNull(subscriptionConsumer)) ? t -> { } : subscriptionConsumer;
     }
 
