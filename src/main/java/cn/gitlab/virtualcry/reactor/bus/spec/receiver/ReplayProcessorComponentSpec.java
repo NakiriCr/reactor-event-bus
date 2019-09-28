@@ -1,4 +1,4 @@
-package cn.gitlab.virtualcry.reactor.bus.spec;
+package cn.gitlab.virtualcry.reactor.bus.spec.receiver;
 
 import cn.gitlab.virtualcry.reactor.bus.Event;
 import lombok.Builder;
@@ -10,9 +10,10 @@ import reactor.core.publisher.ReplayProcessor;
  * cn.gitlab.virtualcry.reactor.bus.env.Environment},
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
 @Builder
-final class EventReplayProcessorComponentSpec implements EventProcessorComponentSpec {
+final class ReplayProcessorComponentSpec implements EventReceiverComponentSpec {
 
     private int                                         historySize;
     private boolean                                     unbounded;
@@ -21,5 +22,4 @@ final class EventReplayProcessorComponentSpec implements EventProcessorComponent
     public <T extends Event> FluxProcessor<T, T> create() {
         return ReplayProcessor.create(historySize, unbounded);
     }
-
 }

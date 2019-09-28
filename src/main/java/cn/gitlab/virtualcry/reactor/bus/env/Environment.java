@@ -1,10 +1,11 @@
 package cn.gitlab.virtualcry.reactor.bus.env;
 
-import cn.gitlab.virtualcry.reactor.bus.spec.EventProcessorComponentSpec;
+import cn.gitlab.virtualcry.reactor.bus.spec.receiver.EventReceiverComponentSpec;
+import cn.gitlab.virtualcry.reactor.bus.spec.subscriber.EventSubscriberComponentSpec;
 
 /**
  * Environment use in {@link cn.gitlab.virtualcry.reactor.bus.Bus} to config {@link
- * cn.gitlab.virtualcry.reactor.bus.processor.EventProcessor}
+ * cn.gitlab.virtualcry.reactor.bus.support.EventProcessor}
  *
  * @author VirtualCry
  */
@@ -28,16 +29,15 @@ public interface Environment {
     /**
      * Create a event receiver config .
      *
-     * @return  A new processor config {@link EventProcessorComponentSpec} uses in event receiver.
+     * @return  A new processor config {@link EventReceiverComponentSpec} uses in event receiver.
      */
-    EventProcessorComponentSpec eventReceiverConfig();
+    EventReceiverComponentSpec eventReceiverConfig();
 
 
     /**
      * Create a event subscriber config .
      *
-     * @return   A new processor config {@link EventProcessorComponentSpec} uses in event subscriber.
+     * @return   A new processor config {@link EventReceiverComponentSpec} uses in event subscriber.
      */
-    EventProcessorComponentSpec eventSubscriberConfig();
-
+    EventSubscriberComponentSpec eventSubscriberConfig();
 }

@@ -1,9 +1,9 @@
-package cn.gitlab.virtualcry.reactor.bus.spec;
+package cn.gitlab.virtualcry.reactor.bus.spec.receiver;
 
 import cn.gitlab.virtualcry.reactor.bus.Event;
 import lombok.Builder;
 import reactor.core.publisher.FluxProcessor;
-import reactor.core.publisher.TopicProcessor;
+import reactor.core.publisher.WorkQueueProcessor;
 import reactor.util.concurrent.WaitStrategy;
 
 import java.util.concurrent.ExecutorService;
@@ -13,11 +13,11 @@ import java.util.concurrent.ExecutorService;
  * cn.gitlab.virtualcry.reactor.bus.env.Environment},
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
 @Builder
-final class EventTopicProcessorComponentSpec implements EventProcessorComponentSpec {
+final class WorkQueueProcessorComponentSpec implements EventReceiverComponentSpec {
 
-    private String                                      name;
     private ExecutorService                             executor;
     private ExecutorService                             requestTaskExecutor;
     private int                                         bufferSize;
@@ -27,8 +27,8 @@ final class EventTopicProcessorComponentSpec implements EventProcessorComponentS
 
     @Override
     public <T extends Event> FluxProcessor<T, T> create() {
-        return TopicProcessor.<T>builder()
-                .name(name)
+        return WorkQueueProcessor.<T>builder()
+                .name("EventReceiver")
                 .executor(executor)
                 .requestTaskExecutor(requestTaskExecutor)
                 .bufferSize(bufferSize)
@@ -37,5 +37,4 @@ final class EventTopicProcessorComponentSpec implements EventProcessorComponentS
                 .autoCancel(autoCancel)
                 .build();
     }
-
 }

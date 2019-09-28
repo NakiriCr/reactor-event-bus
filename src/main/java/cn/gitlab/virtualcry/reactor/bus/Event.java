@@ -27,5 +27,4 @@ public abstract class Event implements Serializable, Cloneable {
     public Object clone() {
         return deserialize(serialize(this));
     }
-
 }

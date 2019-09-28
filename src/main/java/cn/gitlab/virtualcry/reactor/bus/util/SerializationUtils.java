@@ -1,7 +1,5 @@
 package cn.gitlab.virtualcry.reactor.bus.util;
 
-import reactor.util.annotation.Nullable;
-
 import java.io.*;
 
 /**
@@ -16,8 +14,7 @@ public class SerializationUtils {
      * @param object the object to serialize
      * @return an array of bytes representing the object in a portable fashion
      */
-    @Nullable
-    public static byte[] serialize(@Nullable Object object) {
+    public static byte[] serialize(Object object) {
         if (object == null) {
             return null;
         }
@@ -38,8 +35,7 @@ public class SerializationUtils {
      * @param bytes a serialized object
      * @return the result of deserializing the bytes
      */
-    @Nullable
-    public static Object deserialize(@Nullable byte[] bytes) {
+    public static Object deserialize(byte[] bytes) {
         if (bytes == null) {
             return null;
         }
@@ -54,5 +50,4 @@ public class SerializationUtils {
             throw new IllegalStateException("Failed to deserialize object type", ex);
         }
     }
-
 }

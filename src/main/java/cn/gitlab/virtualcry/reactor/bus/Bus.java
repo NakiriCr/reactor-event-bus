@@ -1,8 +1,8 @@
 package cn.gitlab.virtualcry.reactor.bus;
 
-import cn.gitlab.virtualcry.reactor.bus.subscriber.EventSubscriber;
-import cn.gitlab.virtualcry.reactor.bus.subscriber.SubscriberID;
+import cn.gitlab.virtualcry.reactor.bus.support.EventSubscriber;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -35,13 +35,25 @@ public interface Bus {
 
 
     /**
-     * UnSubscribe an event stream with the given {@link SubscriberID}
+     * Cancel subscription by the {@literal SubscriberID}.
      *
      * @param eventType The {@literal Class<Event>} to be used for matching
      * @param subscriberID  The {@literal SubscriberID} to be used for matching
      * @return {@literal this}
+     * @since 3.2.2
      */
-    Bus unSubscribe(Class<? extends Event> eventType, SubscriberID subscriberID);
+    Bus cancel(Class<? extends Event> eventType, String subscriberID);
+
+
+    /**
+     * Cancel subscription by the {@literal SubscriberID}s.
+     *
+     * @param eventType The {@literal Class<Event>} to be used for matching
+     * @param subscriberIDs  The {@literal SubscriberID} to be used for matching
+     * @return {@literal this}
+     * @since 3.2.2
+     */
+    Bus cancel(Class<? extends Event> eventType, Collection<String> subscriberIDs);
 
 
     /**
@@ -49,7 +61,17 @@ public interface Bus {
      *
      * @param event  The {@literal Event} to be processed
      * @return {@literal this}
+     * @since 3.2.2
      */
-    <T extends Event> Bus publish(T event);
+    <T extends Event> Bus post(T event);
 
+
+    /**
+     * Publish an {@link StickyEvent} to {@link org.reactivestreams.Processor}
+     *
+     * @param event  The {@literal Event} to be processed
+     * @return {@literal this}
+     * @since 3.2.2
+     */
+    <T extends StickyEvent> Bus postSticky(T event);
 }
