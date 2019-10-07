@@ -1,12 +1,15 @@
-package cn.gitlab.virtualcry.reactor.bus.spec.receiver;
+package cn.gitlab.virtualcry.reactor.bus.spec.stream;
+
+import cn.gitlab.virtualcry.reactor.bus.env.BuiltInEnvironment;
 
 /**
- * A helper class for configuring a new {@link reactor.core.publisher.FluxProcessor}.
+ * A helper class for configuring {@link EventStreamComponentSpec} used in {@link BuiltInEnvironment}.
  *
  * @author VirtualCry
+ * @see BuiltInEnvironment#eventStreamConfig()
  * @since 3.2.2
  */
-public interface EventReceiverSpec {
+public interface EventStreamSpec {
 
     /**
      * Generate a {@link reactor.core.publisher.TopicProcessor} configuration builder.

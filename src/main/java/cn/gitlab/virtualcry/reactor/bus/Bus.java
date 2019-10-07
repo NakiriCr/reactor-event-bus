@@ -1,77 +1,44 @@
 package cn.gitlab.virtualcry.reactor.bus;
 
-import cn.gitlab.virtualcry.reactor.bus.support.EventSubscriber;
-
-import java.util.Collection;
-import java.util.List;
+import cn.gitlab.virtualcry.reactor.bus.registry.Registration;
+import cn.gitlab.virtualcry.reactor.bus.selector.Selector;
+import cn.gitlab.virtualcry.reactor.bus.support.PayloadConsumer;
 
 /**
  * Basic unit of event handling in Reactor.
  *
  * @author VirtualCry
  */
-public interface Bus {
+public interface Bus<T> {
 
     /**
-     * Register an {@link EventSubscriber} to be triggered when a notification matches the given {@link
-     * Event}.
+     * Are there any {@link Registration}s with {@link Selector Selectors} that match the given {@code key}.
      *
-     * @param eventType The {@literal Class<Event>} to be used for matching
-     * @param subscriber The {@literal EventSubscriber} to be triggered
-     * @return {@literal this}
+     * @param key The key to be matched by {@link Selector Selectors}
+     * @return {@literal true} if there are any matching {@literal Registration}s, {@literal false} otherwise
      */
-    <T extends Event> Bus on(Class<T> eventType, EventSubscriber<T> subscriber);
+    boolean respondsToKey(final Object key);
 
 
     /**
-     * Register an {@link EventSubscriber} to be triggered when a notification matches the given {@link
-     * Event}.
+     * Register a {@link PayloadConsumer} to be triggered when a notification matches the given {@link
+     * Selector}.
      *
-     * @param eventType The {@literal Class<Event>} to be used for matching
-     * @param subscribers The {@literal EventSubscriber}s to be triggered
-     * @return {@literal this}
-     */
-    <T extends Event> Bus on(Class<T> eventType, List<EventSubscriber<T>> subscribers);
-
-
-    /**
-     * Cancel subscription by the {@literal SubscriberID}.
-     *
-     * @param eventType The {@literal Class<Event>} to be used for matching
-     * @param subscriberID  The {@literal SubscriberID} to be used for matching
-     * @return {@literal this}
+     * @param selector The {@literal Selector} to be used for matching
+     * @param consumer The {@literal Consumer} to be triggered
+     * @return A {@link Registration} object that allows the caller to interact with the given mapping
      * @since 3.2.2
      */
-    Bus cancel(Class<? extends Event> eventType, String subscriberID);
+    <V> Registration<Object, PayloadConsumer<V>> on(final Selector selector,
+                                                                 final PayloadConsumer<V> consumer);
 
 
     /**
-     * Cancel subscription by the {@literal SubscriberID}s.
+     * Notify this component that an {@link Event} is ready to be processed.
      *
-     * @param eventType The {@literal Class<Event>} to be used for matching
-     * @param subscriberIDs  The {@literal SubscriberID} to be used for matching
+     * @param key The key to be matched by {@link Selector Selectors}
+     * @param ev  The {@literal Event}
      * @return {@literal this}
-     * @since 3.2.2
      */
-    Bus cancel(Class<? extends Event> eventType, Collection<String> subscriberIDs);
-
-
-    /**
-     * Publish an {@link Event} to {@link org.reactivestreams.Processor}
-     *
-     * @param event  The {@literal Event} to be processed
-     * @return {@literal this}
-     * @since 3.2.2
-     */
-    <T extends Event> Bus post(T event);
-
-
-    /**
-     * Publish an {@link StickyEvent} to {@link org.reactivestreams.Processor}
-     *
-     * @param event  The {@literal Event} to be processed
-     * @return {@literal this}
-     * @since 3.2.2
-     */
-    <T extends StickyEvent> Bus postSticky(T event);
+    Bus<T> notify(final Object key, final T ev);
 }

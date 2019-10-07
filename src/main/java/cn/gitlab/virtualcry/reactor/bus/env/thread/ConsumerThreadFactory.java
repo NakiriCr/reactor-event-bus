@@ -4,23 +4,23 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Implement of {@link ThreadFactory}
+ * Implement of {@link ThreadFactory} that sets thread name.
  *
  * @author VirtualCry
  * @since 3.2.2
  */
-public class SubscriberThreadFactory implements ThreadFactory {
+public class ConsumerThreadFactory implements ThreadFactory {
 
     private static final AtomicInteger poolNumber = new AtomicInteger(1);
     private final ThreadGroup group;
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final String namePrefix;
 
-    public SubscriberThreadFactory() {
+    public ConsumerThreadFactory() {
         SecurityManager s = System.getSecurityManager();
         group = (s != null) ? s.getThreadGroup() :
                 Thread.currentThread().getThreadGroup();
-        namePrefix = "EventSubscriber-" +
+        namePrefix = "EventConsumer" + "-" +
                 poolNumber.getAndIncrement() +
                 "-";
     }

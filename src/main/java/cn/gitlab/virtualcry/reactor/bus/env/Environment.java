@@ -1,43 +1,56 @@
 package cn.gitlab.virtualcry.reactor.bus.env;
 
-import cn.gitlab.virtualcry.reactor.bus.spec.receiver.EventReceiverComponentSpec;
-import cn.gitlab.virtualcry.reactor.bus.spec.subscriber.EventSubscriberComponentSpec;
+import cn.gitlab.virtualcry.reactor.bus.Bus;
+import cn.gitlab.virtualcry.reactor.bus.spec.registry.RegistryComponentSpec;
+import cn.gitlab.virtualcry.reactor.bus.spec.stream.EventStreamComponentSpec;
+import cn.gitlab.virtualcry.reactor.bus.spec.consumer.EventConsumerComponentSpec;
+import cn.gitlab.virtualcry.reactor.bus.BusProcessor;
 
 /**
  * Environment use in {@link cn.gitlab.virtualcry.reactor.bus.Bus} to config {@link
- * cn.gitlab.virtualcry.reactor.bus.support.EventProcessor}
+ * BusProcessor}
  *
  * @author VirtualCry
  */
 public interface Environment {
 
-    Environment ASYNCHRONOUS = new AsynchronousEnvironment();
-    Environment SYNCHRONOUS  = new SynchronousEnvironment();
+    Environment ASYNCHRONOUS = new BuiltInAsyncEnvironment();
+    Environment SYNCHRONOUS  = new BuiltInSyncEnvironment();
 
 
     /**
-     * Force events to be immutable, event will be published after serialize and deserialize,
-     * and it must cost a certain amount of performance.
+     * Create an environment builder.
      *
-     * @return  {@literal default false}
+     @return   A new env builder {@link EventStreamComponentSpec} uses in {@link Bus}.
      */
-    default Boolean forceImmutableEvent() {
-        return false;
+    static BuiltInEnvironment.BuiltInEnvironmentBuilder builder() {
+        return BuiltInEnvironment.builder();
     }
 
 
     /**
-     * Create a event receiver config .
+     * Create a registry center config .
      *
-     * @return  A new processor config {@link EventReceiverComponentSpec} uses in event receiver.
+     * @return  A new config {@link RegistryComponentSpec} uses in registry center.
+     * @since 3.2.2
      */
-    EventReceiverComponentSpec eventReceiverConfig();
+    RegistryComponentSpec registryConfig();
 
 
     /**
-     * Create a event subscriber config .
+     * Create an event stream config .
      *
-     * @return   A new processor config {@link EventReceiverComponentSpec} uses in event subscriber.
+     * @return  A new config {@link EventStreamComponentSpec} uses in event stream.
+     * @since 3.2.2
      */
-    EventSubscriberComponentSpec eventSubscriberConfig();
+    EventStreamComponentSpec eventStreamConfig();
+
+
+    /**
+     * Create an event consumer config .
+     *
+     * @return   A new config {@link EventStreamComponentSpec} uses in event consumer.
+     * @since 3.2.2
+     */
+    EventConsumerComponentSpec eventConsumerConfig();
 }

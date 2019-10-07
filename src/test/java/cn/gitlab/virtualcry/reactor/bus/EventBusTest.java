@@ -2,8 +2,10 @@ package cn.gitlab.virtualcry.reactor.bus;
 
 import cn.gitlab.virtualcry.reactor.bus.env.Environment;
 import cn.gitlab.virtualcry.reactor.bus.event.TestEvent;
-import cn.gitlab.virtualcry.reactor.bus.event.TestStickyEvent;
-import cn.gitlab.virtualcry.reactor.bus.support.EventSubscriber;
+import cn.gitlab.virtualcry.reactor.bus.selector.Selector;
+import cn.gitlab.virtualcry.reactor.bus.spec.BuiltInEventConsumerComponentSpec;
+import cn.gitlab.virtualcry.reactor.bus.spec.BuiltInEventStreamComponentSpec;
+import cn.gitlab.virtualcry.reactor.bus.support.PayloadConsumer;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.util.Loggers;
@@ -15,7 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import static cn.gitlab.virtualcry.reactor.bus.selector.Selectors.$;
 
 /**
  * Test for {@link EventBus}
@@ -23,12 +26,15 @@ import java.util.stream.Collectors;
  * @author VirtualCry
  */
 public class EventBusTest {
-    private Bus bus;
+    private EventBus bus;
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Before
     public void initialize() {
-        this.bus = EventBus.create(Environment.ASYNCHRONOUS);
+        this.bus = EventBus.create(Environment.builder()
+                .eventStreamComponentSpec(BuiltInEventStreamComponentSpec.WORK_QUEUE_PROCESSOR)
+                .eventConsumerComponentSpec(BuiltInEventConsumerComponentSpec.UNLIMITED_PARALLEL_SCHEDULER)
+                .build());
     }
 
     @Test
@@ -36,122 +42,63 @@ public class EventBusTest {
         // create semaphore.
         Semaphore semaphore = new Semaphore(0);
 
-        for (int i = 0; i < 10; i++) {
-
-            executorService.execute(() -> {
-                try { this.testEvent(); }
-                catch (Exception ex) { throw new RuntimeException(ex); }
-            });
-
-            executorService.execute(() -> {
-                try { this.testStickyEvent(); }
-                catch (Exception ex) { throw new RuntimeException(ex); }
-            });
-
-        }
+        try { this.testEvent(); }
+        catch (Exception ex) { throw new RuntimeException(ex); }
 
         // block.
         semaphore.acquire();
     }
 
-
-
-
     private void testEvent() throws Exception {
 
         // create event.
         List<TestEvent> testEvents = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 1; i < 2; i++) {
             testEvents.add(TestEvent.builder().content("TestContent " + i).build());
         }
 
         // create event subscriber.
-        List<EventSubscriber<TestEvent>> subscribers = new ArrayList<>();
-        for (int i = 0; i < 30; i++) {
+        List<PayloadConsumer<TestEvent>> subscribers = new ArrayList<>();
+        for (int i = 1; i < 4; i++) {
             subscribers.add(testSubscriberFunc.apply(i));
         }
 
         // subscribe on event bus.
-        this.bus.on(TestEvent.class, subscribers);
+        Selector selector = $(TestEvent.class);
+        subscribers.forEach(subscriber -> this.bus.on(selector, subscriber));
+        subscribers.forEach(subscriber -> this.bus.on(selector, subscriber));
 
         // publish event.
-        testEvents.forEach(this.bus::post);
+        testEvents.forEach(testEvent -> this.bus.notify(TestEvent.class, Event.wrap(testEvent)));
 
 //        Thread.sleep(Duration.ofSeconds(3).toMillis());
 
-        // subscribe on event bus.
-        this.bus.cancel(TestStickyEvent.class, subscribers.stream().map(EventSubscriber::getSubscriberID).collect(Collectors.toList()));
+//         subscribe on event bus.
+//        subscribers.forEach(subscriber -> this.bus.on($(TestEvent.class), subscriber));
 
-        // subscribe on event bus.
-        this.bus.on(TestEvent.class, subscribers);
+//        this.bus.cancel(TestEvent.class);
 
         // publish event.
-        testEvents.forEach(this.bus::post);
+        testEvents.forEach(testEvent -> this.bus.notify(TestEvent.class, Event.wrap(testEvent)));
+
+
+//        this.bus.notify(Flux.fromIterable(testEvents), TestEvent::getClass);
+
+        //         subscribe on event bus.
+//        subscribers.forEach(subscriber -> this.bus.on(Selectors.$(TestEvent.class), subscriber));
     }
 
-
-
-    private void testStickyEvent() throws Exception {
-
-        // create event.
-        List<TestStickyEvent> testStickyEvents = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
-            testStickyEvents.add(TestStickyEvent.builder().content("TestContent " + i).build());
-        }
-
-        // create event subscriber.
-        List<EventSubscriber<TestStickyEvent>> subscribers = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            subscribers.add(testStickysubscriberFunc.apply(i));
-        }
-
-        // publish event.
-        testStickyEvents.forEach(this.bus::post);
-
-        // subscribe on event bus.
-        this.bus.on(TestStickyEvent.class, subscribers);
-
-//        Thread.sleep(Duration.ofSeconds(6).toMillis());
-
-        // publish event.
-        testStickyEvents.forEach(this.bus::postSticky);
-
-        // unsubscribe.
-        this.bus.cancel(TestStickyEvent.class, subscribers.stream().map(EventSubscriber::getSubscriberID).collect(Collectors.toList()));
-//        Thread.sleep(Duration.ofSeconds(6).toMillis());
-        // subscribe on event bus.
-        this.bus.on(TestStickyEvent.class, testStickysubscriberFunc.apply(11));
-    }
-
-
-
-    private Function<Integer, EventSubscriber<TestEvent>> testSubscriberFunc = index ->
-            EventSubscriber.<TestEvent>builder()
-                    .subscriberID("TestEventSubscriber: " + index)
+    private Function<Integer, PayloadConsumer<TestEvent>> testSubscriberFunc = index ->
+            PayloadConsumer.<TestEvent>builder()
+                    .id("TestEventSubscriber: " + index)
                     .priority(index)
-                    .eventConsumer(event -> {
+                    .delegate(event -> {
                         try {
                             Loggers.getLogger(this.getClass()).info(index + ": Start to sleep 3s.");
                             Thread.sleep(Duration.ofSeconds(1).toMillis());
-                            if (index / 2 != 0)
+//                            if (index / 2 != 0)
 //                                throw new RuntimeException("Test error.");
-                                System.err.println(index + ": End. | " + event.getContent());
-                        }
-                        catch (Exception ex) { throw new RuntimeException(ex); }
-                    })
-                    .build();
-
-    private Function<Integer, EventSubscriber<TestStickyEvent>> testStickysubscriberFunc = index ->
-            EventSubscriber.<TestStickyEvent>builder()
-                    .subscriberID("TestStickyEventSubscriber: " + index)
-                    .priority(index)
-                    .eventConsumer(event -> {
-                        try {
-                            Loggers.getLogger(this.getClass()).info(index + ": Start to sleep 3s.");
-                            Thread.sleep(Duration.ofSeconds(1).toMillis());
-                            if (index / 2 != 0)
-//                                throw new RuntimeException("Test error.");
-                                System.err.println(index + ": End. | " + event.getContent());
+                                System.err.println("{ TestEventSubscriber: " + index + " }: End. | " + event.getContent());
                         }
                         catch (Exception ex) { throw new RuntimeException(ex); }
                     })

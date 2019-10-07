@@ -1,7 +1,5 @@
 package cn.gitlab.virtualcry.reactor.bus.event;
 
-import cn.gitlab.virtualcry.reactor.bus.Event;
-import lombok.Builder;
 import lombok.Getter;
 
 /**
@@ -9,8 +7,8 @@ import lombok.Getter;
  *
  * @author VirtualCry
  */
-@Builder @Getter
-public class TestEvent extends Event {
+@Getter
+public class TestEvent {
 
     private String content;
 }
