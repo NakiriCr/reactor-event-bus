@@ -1,7 +1,5 @@
-package cn.gitlab.virtualcry.reactor.bus;
+package cn.gitlab.virtualcry.reactor.bus.support;
 
-import cn.gitlab.virtualcry.reactor.bus.registry.Registry;
-import cn.gitlab.virtualcry.reactor.bus.support.PayloadConsumer;
 import org.reactivestreams.Subscription;
 import reactor.core.publisher.FluxProcessor;
 
@@ -12,18 +10,14 @@ import reactor.core.publisher.FluxProcessor;
  * @author VirtualCry
  * @since 3.2.2
  */
-public interface BusProcessor<T> {
-
-
-    Registry<Object, PayloadConsumer<?>> getRegistry();
-
+public interface Dispatcher<E> {
 
     /**
      * Event sent by the {@link FluxProcessor} in response to requests to {@link Subscription#request(long)}.
      *
      * @param ev The {@literal subscriberIDs} to be used for element signaled
      */
-    void onNext(T ev);
+    void onNext(E ev);
 
 
     /**

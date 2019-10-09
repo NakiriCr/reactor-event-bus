@@ -8,7 +8,7 @@ import lombok.Getter;
  * @since 3.2.2
  */
 @Getter
-class CacheableRegistration<K ,V> implements Registration<K, V> {
+public class CacheableRegistration<K ,V> implements Registration<K, V> {
 
     private final Selector<K>                           selector;
     private final V                                     object;

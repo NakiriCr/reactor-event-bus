@@ -1,10 +1,7 @@
 package cn.gitlab.virtualcry.reactor.bus;
 
-import cn.gitlab.virtualcry.reactor.bus.env.Environment;
 import cn.gitlab.virtualcry.reactor.bus.event.TestEvent;
 import cn.gitlab.virtualcry.reactor.bus.selector.Selector;
-import cn.gitlab.virtualcry.reactor.bus.spec.BuiltInEventConsumerComponentSpec;
-import cn.gitlab.virtualcry.reactor.bus.spec.BuiltInEventStreamComponentSpec;
 import cn.gitlab.virtualcry.reactor.bus.support.PayloadConsumer;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,10 +28,7 @@ public class EventBusTest {
 
     @Before
     public void initialize() {
-        this.bus = EventBus.create(Environment.builder()
-                .eventStreamComponentSpec(BuiltInEventStreamComponentSpec.WORK_QUEUE_PROCESSOR)
-                .eventConsumerComponentSpec(BuiltInEventConsumerComponentSpec.UNLIMITED_PARALLEL_SCHEDULER)
-                .build());
+        this.bus = EventBus.config().deDuplicationEventRouting().get();
     }
 
     @Test
@@ -53,8 +47,8 @@ public class EventBusTest {
 
         // create event.
         List<TestEvent> testEvents = new ArrayList<>();
-        for (int i = 1; i < 2; i++) {
-            testEvents.add(TestEvent.builder().content("TestContent " + i).build());
+        for (int i = 1; i < 3; i++) {
+            testEvents.add(new TestEvent("TestContent " + i));
         }
 
         // create event subscriber.
@@ -71,21 +65,15 @@ public class EventBusTest {
         // publish event.
         testEvents.forEach(testEvent -> this.bus.notify(TestEvent.class, Event.wrap(testEvent)));
 
-//        Thread.sleep(Duration.ofSeconds(3).toMillis());
-
-//         subscribe on event bus.
-//        subscribers.forEach(subscriber -> this.bus.on($(TestEvent.class), subscriber));
-
-//        this.bus.cancel(TestEvent.class);
+        Thread.sleep(10000);
+        System.out.println();
+        System.out.println();
+        System.out.println("      ============================       ");
+        System.out.println();
+        System.out.println();
 
         // publish event.
         testEvents.forEach(testEvent -> this.bus.notify(TestEvent.class, Event.wrap(testEvent)));
-
-
-//        this.bus.notify(Flux.fromIterable(testEvents), TestEvent::getClass);
-
-        //         subscribe on event bus.
-//        subscribers.forEach(subscriber -> this.bus.on(Selectors.$(TestEvent.class), subscriber));
     }
 
     private Function<Integer, PayloadConsumer<TestEvent>> testSubscriberFunc = index ->
@@ -98,7 +86,7 @@ public class EventBusTest {
                             Thread.sleep(Duration.ofSeconds(1).toMillis());
 //                            if (index / 2 != 0)
 //                                throw new RuntimeException("Test error.");
-                                System.err.println("{ TestEventSubscriber: " + index + " }: End. | " + event.getContent());
+                                Loggers.getLogger(this.getClass()).error("{ TestEventSubscriber: " + index + " }: End. | " + event.getContent());
                         }
                         catch (Exception ex) { throw new RuntimeException(ex); }
                     })

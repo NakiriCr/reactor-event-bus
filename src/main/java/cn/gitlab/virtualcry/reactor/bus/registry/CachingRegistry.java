@@ -26,13 +26,18 @@ public class CachingRegistry<K, V> implements Registry<K, V> {
     private final Cache<Object,
             List<Registration<K, ? extends V>>>         cacheL2;
 
+    private final boolean                               useL2Cache;
+    private final Consumer<K>                           onNotFound;
+
     private final Consumer<Registration<K,
             ? extends V>>                               onRegister;
     private final Consumer<Registration<K,
             ? extends V>>                               onUnregister;
 
 
-    CachingRegistry(Consumer<Registration<K, ? extends V>> onRegister,
+    CachingRegistry(boolean useL2Cache,
+                    Consumer<K> onNotFound,
+                    Consumer<Registration<K, ? extends V>> onRegister,
                     Consumer<Registration<K, ? extends V>> onUnregister) {
         this.cacheL1 = Caffeine.newBuilder()
                 .writer(new L1RegistrationCacheWriter())
@@ -42,6 +47,8 @@ public class CachingRegistry<K, V> implements Registry<K, V> {
                 .maximumSize(1000)
                 .softValues()
                 .build();
+        this.useL2Cache = useL2Cache;
+        this.onNotFound = onNotFound;
         this.onRegister = onRegister;
         this.onUnregister = onUnregister;
     }
@@ -70,7 +77,10 @@ public class CachingRegistry<K, V> implements Registry<K, V> {
     @Override
     public List<Registration<K, ? extends V>> select(K key) {
         List<Registration<K, ? extends V>> selectedRegs = this.cacheL2.getIfPresent(key);
-        return selectedRegs == null ? new ArrayList<>() : selectedRegs;
+        selectedRegs = selectedRegs == null ? new ArrayList<>() : selectedRegs;
+        if (selectedRegs.isEmpty() && this.onNotFound != null)
+            this.onNotFound.accept(key);
+        return selectedRegs;
     }
 
     @Override

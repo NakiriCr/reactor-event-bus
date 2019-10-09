@@ -11,4 +11,8 @@ import lombok.Getter;
 public class TestEvent {
 
     private String content;
+
+    public TestEvent(String content) {
+        this.content = content;
+    }
 }
