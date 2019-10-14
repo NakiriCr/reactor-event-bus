@@ -2,7 +2,8 @@ package cn.gitlab.virtualcry.reactor.bus;
 
 import cn.gitlab.virtualcry.reactor.bus.registry.Registration;
 import cn.gitlab.virtualcry.reactor.bus.selector.Selector;
-import cn.gitlab.virtualcry.reactor.bus.support.PayloadConsumer;
+
+import java.util.function.Consumer;
 
 /**
  * Basic unit of event handling in Reactor.
@@ -21,16 +22,15 @@ public interface Bus<T> {
 
 
     /**
-     * Register a {@link PayloadConsumer} to be triggered when a notification matches the given {@link
+     * Register a {@link Consumer} to be triggered when a notification matches the given {@link
      * Selector}.
      *
      * @param selector The {@literal Selector} to be used for matching
      * @param consumer The {@literal Consumer} to be triggered
      * @return A {@link Registration} object that allows the caller to interact with the given mapping
-     * @since 3.2.2
      */
-    <V> Registration<Object, PayloadConsumer<V>> on(final Selector selector,
-                                                                 final PayloadConsumer<V> consumer);
+    <V extends T> Registration<Object, Consumer<? extends T>> on(final Selector selector,
+                                                                         final Consumer<V> consumer);
 
 
     /**
@@ -40,5 +40,5 @@ public interface Bus<T> {
      * @param ev  The {@literal Event}
      * @return {@literal this}
      */
-    Bus<T> notify(final Object key, final T ev);
+    Bus<T> notify(Object key, T ev);
 }
