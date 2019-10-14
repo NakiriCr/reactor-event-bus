@@ -1,12 +1,12 @@
 package cn.gitlab.virtualcry.reactor.bus.filter;
 
+import cn.gitlab.virtualcry.reactor.bus.support.Assert;
 import cn.gitlab.virtualcry.reactor.bus.support.loadBalance.LoadBalance;
 import cn.gitlab.virtualcry.reactor.bus.support.loadBalance.LoadBalanceStrategy;
 import cn.gitlab.virtualcry.reactor.bus.support.loadBalance.LoadBalances;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * A {@link Filter} implementation that returns a single item. The item is selected
@@ -28,7 +28,7 @@ public final class RoundRobinFilter extends AbstractFilter {
 
 	@Override
 	public <T> List<T> doFilter(List<T> items, Object key) {
-		Objects.requireNonNull(key, "'key' must not be null.");
+		Assert.notNull(key, "'key' must not be null.");
 		if (items.isEmpty())
 			return items;
 		else

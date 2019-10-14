@@ -11,6 +11,7 @@ import cn.gitlab.virtualcry.reactor.bus.routing.Router;
 import cn.gitlab.virtualcry.reactor.bus.selector.Selector;
 import cn.gitlab.virtualcry.reactor.bus.selector.Selectors;
 import cn.gitlab.virtualcry.reactor.bus.spec.EventBusSpec;
+import cn.gitlab.virtualcry.reactor.bus.support.Assert;
 import cn.gitlab.virtualcry.reactor.bus.support.loadBalance.LoadBalanceStrategy;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -21,7 +22,6 @@ import reactor.core.publisher.UnicastProcessor;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -192,8 +192,8 @@ public class EventBus implements Bus<Event<?>>, Consumer<Event<?>> {
     public <V extends Event<?>> Registration<Object,
             Consumer<? extends Event<?>>> on(final Selector selector,
                                                      final Consumer<V> consumer) {
-        Objects.requireNonNull(selector, "Selector cannot be null.");
-        Objects.requireNonNull(consumer, "Consumer cannot be null.");
+        Assert.notNull(selector, "Selector cannot be null.");
+        Assert.notNull(consumer, "Consumer cannot be null.");
         // proxy.
         Consumer<V> proxyConsumer = ev -> {
             if (null != selector.getHeaderResolver()) {
@@ -207,8 +207,8 @@ public class EventBus implements Bus<Event<?>>, Consumer<Event<?>> {
 
     @Override
     public EventBus notify(Object key, Event<?> ev) {
-        Objects.requireNonNull(key, "Key cannot be null.");
-        Objects.requireNonNull(ev, "Event cannot be null.");
+        Assert.notNull(key, "Key cannot be null.");
+        Assert.notNull(ev, "Event cannot be null.");
         ev.setKey(key);
         dispatcher.onNext(ev);
         return this;

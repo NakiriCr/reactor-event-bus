@@ -1,5 +1,7 @@
 package cn.gitlab.virtualcry.reactor.bus.support.loadBalance;
 
+import cn.gitlab.virtualcry.reactor.bus.support.Assert;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
@@ -27,7 +29,7 @@ final class RoundRobinLoadBalance implements LoadBalance {
     @Override
     public <T> T get(List<T> items, Object... args) {
         Object key = args != null ? args[0] : null;
-        Objects.requireNonNull(key, "'key' must not be null");
+        Assert.notNull(key, "'key' must not be null");
         if (items.isEmpty())
             return null;
         else

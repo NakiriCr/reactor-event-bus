@@ -1,5 +1,6 @@
 package cn.gitlab.virtualcry.reactor.bus.filter;
 
+import cn.gitlab.virtualcry.reactor.bus.support.Assert;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import reactor.util.Logger;
 import reactor.util.Loggers;
@@ -22,7 +23,7 @@ public class TraceableDelegatingFilter implements Filter {
 	public TraceableDelegatingFilter(@NonNull Filter delegate) {
 		this.logger = Loggers.getLogger(this.getClass());
 
-		Objects.requireNonNull(delegate, "Delegate Filter cannot be null.");
+		Assert.notNull(delegate, "Delegate Filter cannot be null.");
 		this.delegate = delegate;
 	}
 

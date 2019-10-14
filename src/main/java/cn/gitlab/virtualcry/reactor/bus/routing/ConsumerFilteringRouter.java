@@ -3,13 +3,13 @@ package cn.gitlab.virtualcry.reactor.bus.routing;
 import cn.gitlab.virtualcry.reactor.bus.Event;
 import cn.gitlab.virtualcry.reactor.bus.filter.Filter;
 import cn.gitlab.virtualcry.reactor.bus.registry.Registration;
+import cn.gitlab.virtualcry.reactor.bus.support.Assert;
 import lombok.Getter;
 import reactor.core.scheduler.Scheduler;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -33,8 +33,8 @@ public class ConsumerFilteringRouter implements Router {
                                    Scheduler consumerScheduler) {
         this.logger = Loggers.getLogger(this.getClass());
 
-        Objects.requireNonNull(filter, "filter must not be null.");
-        Objects.requireNonNull(consumerScheduler, "Consumer Scheduler must not be null.");
+        Assert.notNull(filter, "filter must not be null.");
+        Assert.notNull(consumerScheduler, "Consumer Scheduler must not be null.");
         this.filter = filter;
         this.routerScheduler = routerScheduler;
         this.consumerScheduler = consumerScheduler;

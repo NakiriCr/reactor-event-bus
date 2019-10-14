@@ -1,5 +1,6 @@
 package cn.gitlab.virtualcry.reactor.bus;
 
+import cn.gitlab.virtualcry.reactor.bus.support.Assert;
 import lombok.Getter;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -112,7 +113,7 @@ public class Event<T> implements Serializable {
      * @return {@literal this}
      */
     public Event<T> setReplyTo(Object replyTo) {
-        Objects.requireNonNull(replyTo, "ReplyTo cannot be null.");
+        Assert.notNull(replyTo, "ReplyTo cannot be null.");
         this.replyTo = replyTo;
         return this;
     }
