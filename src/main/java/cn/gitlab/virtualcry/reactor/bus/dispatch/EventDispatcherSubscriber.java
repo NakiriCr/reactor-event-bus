@@ -1,4 +1,4 @@
-package cn.gitlab.virtualcry.reactor.bus.support;
+package cn.gitlab.virtualcry.reactor.bus.dispatch;
 
 import cn.gitlab.virtualcry.reactor.bus.Event;
 import cn.gitlab.virtualcry.reactor.bus.registry.Registry;
@@ -9,26 +9,26 @@ import org.reactivestreams.Subscription;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 /**
- * Somethings
+ * Implementation of {@link DispatcherSubscriber} that uses {@link Registry} and {@link Router}.
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
 public class EventDispatcherSubscriber implements DispatcherSubscriber<Event<?>> {
     private final Logger                                logger;
 
     private final UUID                                  id;
     private final Registry<Object,
-            PayloadConsumer<?>>                         consumerRegistry;
+            Consumer<? extends Event<?>>>               consumerRegistry;
     private final Router                                router;
     private final Consumer<Throwable>                   dispatchErrorHandler;
 
 
-    public EventDispatcherSubscriber(@NonNull Registry<Object, PayloadConsumer<?>> consumerRegistry,
+    public EventDispatcherSubscriber(@NonNull Registry<Object, Consumer<? extends Event<?>>> consumerRegistry,
                                      @NonNull Router router,
                                      @Nullable Consumer<Throwable> dispatchErrorHandler) {
         this.logger = Loggers.getLogger(this.getClass());
@@ -40,39 +40,33 @@ public class EventDispatcherSubscriber implements DispatcherSubscriber<Event<?>>
     }
 
 
-    @SuppressWarnings("unchecked")
     @Override
     public void doOnNext(Event<?> ev) {
-        if (this.logger.isDebugEnabled())
-            this.logger.debug("Published event. - {}: {}", ev.getKey(), ev.getId());
-        this.router.route(
-                ev.getKey(),
-                ev,
-                (List) this.consumerRegistry.select(ev.getKey()),
-                dispatchErrorHandler
-        );
+        if (logger.isDebugEnabled())
+            logger.debug("Published event. - {}: {}", ev.getKey(), ev.getId());
+        router.route(ev.getKey(), ev, consumerRegistry.select(ev.getKey()), dispatchErrorHandler);
     }
 
     @Override
     public void doOnError(Throwable t) {
-        this.logger.error("Errored. - processor: " + this.id, t);
+        logger.error("Errored. - processor: " + id, t);
     }
 
     @Override
     public void doOnSubscribe(Subscription s) {
-        if (this.logger.isDebugEnabled())
-            this.logger.debug("Subscribed. - processor: {}", this.id);
+        if (logger.isDebugEnabled())
+            logger.debug("Subscribed. - processor: {}", id);
     }
 
     @Override
     public void doOnComplete() {
-        if (this.logger.isDebugEnabled())
-            this.logger.debug("Completed. - processor: {}", this.id);
+        if (logger.isDebugEnabled())
+            logger.debug("Completed. - processor: {}", id);
     }
 
     @Override
     public void doOnCancel() {
-        if (this.logger.isDebugEnabled())
-            this.logger.debug("Subscribed. - processor: {}", this.id);
+        if (logger.isDebugEnabled())
+            logger.debug("Subscribed. - processor: {}", id);
     }
 }
