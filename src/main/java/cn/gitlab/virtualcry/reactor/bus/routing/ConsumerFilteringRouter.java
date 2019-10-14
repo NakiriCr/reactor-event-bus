@@ -3,14 +3,13 @@ package cn.gitlab.virtualcry.reactor.bus.routing;
 import cn.gitlab.virtualcry.reactor.bus.Event;
 import cn.gitlab.virtualcry.reactor.bus.filter.Filter;
 import cn.gitlab.virtualcry.reactor.bus.registry.Registration;
-import cn.gitlab.virtualcry.reactor.bus.support.PayloadConsumer;
 import lombok.Getter;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import reactor.core.scheduler.Scheduler;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -25,39 +24,49 @@ public class ConsumerFilteringRouter implements Router {
     private final Logger                                logger;
 
     private final Filter                                filter;
+    private final Scheduler                             routerScheduler;
     private final Scheduler                             consumerScheduler;
 
 
-    public ConsumerFilteringRouter(@NonNull Filter filter,
-                                   @NonNull Scheduler consumerScheduler) {
+    public ConsumerFilteringRouter(Filter filter,
+                                   Scheduler routerScheduler,
+                                   Scheduler consumerScheduler) {
         this.logger = Loggers.getLogger(this.getClass());
 
+        Objects.requireNonNull(filter, "filter must not be null.");
+        Objects.requireNonNull(consumerScheduler, "Consumer Scheduler must not be null.");
         this.filter = filter;
+        this.routerScheduler = routerScheduler;
         this.consumerScheduler = consumerScheduler;
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event<V>, V> void route(Object key, E ev,
-                                              List<Registration<Object, ? extends PayloadConsumer<? super V>>> consumers,
+    public <E extends Event<?>> void route(Object key, E ev,
+                                              List<Registration<Object, ? extends Consumer<? extends Event<?>>>> registrations,
                                               Consumer<Throwable> errorConsumer) {
-        this.filter.filter(consumers, key).stream()
-                .map(Registration::getObject)
-                .sorted()
-                .peek(consumer -> {
-                    if (this.logger.isDebugEnabled())
-                        this.logger.debug("Delivered event. - {}: {} → {}", ev.getKey(), ev.getId(), consumer.getId());
+        routerScheduler.schedule(() -> filter.filter(registrations, key).stream()
+                .filter(registration -> !registration.isCancelled())
+                .peek(registration -> {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Delivered event. - {}: {} → {}", ev.getKey(), ev.getId(), registration.getObject());
                 })
-                .forEach(consumer -> consumerScheduler.schedule(() -> {
+                .forEach(registration -> consumerScheduler.schedule(() -> {
                     try {
-                        consumer.accept(ev.getData());
+                        ((Consumer<E>) registration.getObject()).accept(ev);
                     }
                     catch (Throwable t) {
                         if (null != errorConsumer)
                             errorConsumer.accept(t);
                         else
-                            this.logger.error("Error in handling event. - " + ev.getKey() + ": " + ev.getId(), t);
+                            logger.error("Error in handling event. - " + ev.getKey() + ": " + ev.getId(), t);
                     }
-                }));
+                    finally {
+                        if (registration.isCancelAfterUse())
+                            registration.cancel();
+                    }
+                }))
+        );
     }
 }
