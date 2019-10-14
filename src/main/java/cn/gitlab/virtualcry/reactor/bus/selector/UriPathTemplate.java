@@ -129,5 +129,4 @@ public class UriPathTemplate {
 		}
 		return m;
 	}
-
 }
