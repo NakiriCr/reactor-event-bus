@@ -1,7 +1,8 @@
 package cn.gitlab.virtualcry.reactor.bus.filter;
 
+import cn.gitlab.virtualcry.reactor.bus.support.Assert;
+
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author VirtualCry
@@ -11,7 +12,7 @@ abstract class AbstractFilter implements Filter {
 
 	@Override
 	public final <T> List<T> filter(List<T> items, Object key) {
-		Objects.requireNonNull(items, "'items' must not be null.");
+		Assert.notNull(items, "'items' must not be null.");
 		return doFilter(items, key);
 	}
 

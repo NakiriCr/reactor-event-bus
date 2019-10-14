@@ -2,12 +2,12 @@ package cn.gitlab.virtualcry.reactor.bus.routing;
 
 import cn.gitlab.virtualcry.reactor.bus.Event;
 import cn.gitlab.virtualcry.reactor.bus.registry.Registration;
+import cn.gitlab.virtualcry.reactor.bus.support.Assert;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -22,7 +22,7 @@ public class TraceableDelegatingRouter implements Router {
     public TraceableDelegatingRouter(@NonNull Router delegate) {
         this.logger = Loggers.getLogger(this.getClass());
 
-        Objects.requireNonNull(delegate, "Delegate Router cannot be null.");
+        Assert.notNull(delegate, "Delegate Router cannot be null.");
         this.delegate = delegate;
     }
 
