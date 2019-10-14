@@ -6,6 +6,7 @@ package cn.gitlab.virtualcry.reactor.bus.selector;
  * @author Jon Brisbin
  * @author Andy Wilkinson
  * @author Stephane Maldini
+ * @since 3.2.2
  */
 public class ClassSelector extends ObjectSelector<Object, Class<?>> {
 

@@ -6,6 +6,7 @@ import java.util.function.Predicate;
  * Implementation of {@link Selector} that delegates the work of matching an object to the given {@link Predicate}.
  *
  * @author Jon Brisbin
+ * @since 3.2.2
  */
 public class PredicateSelector extends ObjectSelector<Object, Predicate<Object>> {
 

@@ -1,6 +1,9 @@
 package cn.gitlab.virtualcry.reactor.bus.selector;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A {@link Selector} implementation based on the given regular expression. Parses it into a {@link Pattern} for
@@ -16,8 +19,13 @@ import java.util.regex.Pattern;
  *
  * @author Jon Brisbin
  * @author Andy Wilkinson
+ * @author VirtualCry
+ * @since 3.2.2
  */
 public class RegexSelector extends ObjectSelector<Object, Pattern> {
+
+	private final HeaderResolver 						headerResolver;
+
 
 	/**
 	 * Create a {@link Selector} when the given regex pattern.
@@ -27,6 +35,15 @@ public class RegexSelector extends ObjectSelector<Object, Pattern> {
 	 */
 	public RegexSelector(String pattern) {
 		super(Pattern.compile(pattern));
+		this.headerResolver = key -> {
+			Matcher m = getObject().matcher(key.toString());
+			if (m.matches())
+				return Stream.iterate(0, i -> i + 1)
+						.limit(m.groupCount())
+						.collect(Collectors.toMap(i -> "group" + i, m::group));
+			else
+				return null;
+		};
 	}
 
 	/**
@@ -43,7 +60,11 @@ public class RegexSelector extends ObjectSelector<Object, Pattern> {
 
 	@Override
 	public boolean matches(Object key) {
-		return key instanceof String
-				&& getObject().matcher((String)key).matches();
+		return getObject().matcher(String.valueOf(key)).matches();
+	}
+
+	@Override
+	public HeaderResolver getHeaderResolver() {
+		return headerResolver;
 	}
 }

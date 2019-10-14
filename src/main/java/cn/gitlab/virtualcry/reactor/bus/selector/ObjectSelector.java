@@ -14,11 +14,14 @@ import java.util.function.Predicate;
  * @author Jon Brisbin
  * @author Andy Wilkinson
  * @author Stephane Maldini
+ * @author VirtualCry
+ * @since 3.2.2
  */
 public class ObjectSelector<K, T> implements Selector<K>, Predicate<K> {
 
-	private final Object monitor = new Object();
-	private final T object;
+	private final Object 								monitor;
+	private final T 									object;
+
 
 	/**
 	 * Create a new {@link Selector} instance from the given object.
@@ -27,6 +30,7 @@ public class ObjectSelector<K, T> implements Selector<K>, Predicate<K> {
 	 * 		The object to wrap.
 	 */
 	public ObjectSelector(T object) {
+		this.monitor = new Object();
 		this.object = object;
 	}
 
@@ -52,6 +56,11 @@ public class ObjectSelector<K, T> implements Selector<K>, Predicate<K> {
 	@Override
 	public boolean matches(K key) {
 		return !(null == object && null != key) && (object != null && object.equals(key));
+	}
+
+	@Override
+	public HeaderResolver getHeaderResolver() {
+		return null;
 	}
 
 	@Override
