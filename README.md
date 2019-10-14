@@ -10,7 +10,7 @@
 Event bus is a centralized event processing mechanism and an implementation of publish-subscribe mode.
 It allows different components to communicate with each other without interdependence and achieves decoupling between components.
 <br><br>
-![avatar](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/raw/master/images/event-bus-architecture.png)
+![avatar](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/raw/master/images/data-routing.svg)
 
 ## Features
 * Adapt to `Reactor3.X`
