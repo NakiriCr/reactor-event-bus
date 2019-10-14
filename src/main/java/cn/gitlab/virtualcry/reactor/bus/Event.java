@@ -142,7 +142,6 @@ public class Event<T> implements Serializable {
         return copy(data);
     }
 
-
     /**
      * Create a copy of this event, reusing same replyTo
      *
@@ -155,7 +154,7 @@ public class Event<T> implements Serializable {
             return new Event<>(data);
         }
     }
-
+    
 
     @Override
     public String toString() {
