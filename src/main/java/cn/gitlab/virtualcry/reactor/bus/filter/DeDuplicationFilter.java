@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
  * @author VirtualCry
  * @since 3.2.2
  */
-@SuppressWarnings("unchecked")
 public final class DeDuplicationFilter extends AbstractFilter {
 
 	@Override
