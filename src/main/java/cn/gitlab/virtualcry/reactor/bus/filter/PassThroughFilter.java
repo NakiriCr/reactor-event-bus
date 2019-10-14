@@ -5,8 +5,9 @@ import java.util.List;
 /**
  * A {@link Filter} implementation that performs no filtering, returning the {@code items} as-is.
  *
- * @author VirtualCry
- *
+ * @author Andy Wilkinson
+ * @author Stephane Maldini
+ * @since 3.2.2
  */
 public final class PassThroughFilter extends AbstractFilter {
 

@@ -6,8 +6,8 @@ import java.util.List;
 /**
  * A {@link Filter} implementation that returns the first item.
  *
- * @author VirtualCry
- *
+ * @author Stephane Maldini
+ * @since 3.2.2
  */
 public final class FirstFilter extends AbstractFilter {
 
