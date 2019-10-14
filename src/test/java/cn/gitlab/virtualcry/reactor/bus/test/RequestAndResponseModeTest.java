@@ -43,7 +43,7 @@ public class RequestAndResponseModeTest {
         this.semaphore = new Semaphore(0);
 
         // create event bus.
-        this.bus = EventBus.config().get();
+        this.bus = EventBus.config().traceEventPath().get();
         // set test key.
         this.notifyKey = "job.sink";
         this.replyKey = "reply.sink";
