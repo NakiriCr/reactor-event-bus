@@ -1,6 +1,5 @@
 package cn.gitlab.virtualcry.reactor.bus;
 
-import cn.gitlab.virtualcry.reactor.bus.support.PayloadConsumer;
 import lombok.Getter;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -9,22 +8,28 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * Event will be processed by {@link PayloadConsumer}s.
+ * Wrapper for an object that needs to be processed by {@link java.util.function.Consumer}s.
  *
+ * @param <T>
+ *     The type of the wrapped object
+ *
+ * @author Jon Brisbin
+ * @author Stephane Maldini
+ * @author Andy Wilkinson
  * @author VirtualCry
  */
 @Getter
 public class Event<T> implements Serializable {
 
-    private final String                            id
-            = UUID.randomUUID().toString();
+    private final UUID                              id
+            = UUID.randomUUID();
     private final Date                              creationDate
             = new Date();
+    private final Headers                           headers;
+    private final T                                 data;
 
-    private volatile Headers                        headers
-            = new Headers();
     private volatile Object                         key;
-    private volatile T                              data;
+    private volatile Object                         replyTo;
 
 
     /**
@@ -35,7 +40,10 @@ public class Event<T> implements Serializable {
      */
     public Event(Class<T> klass) {
         this.key = klass;
+        this.headers = new Headers();
+        this.data = null;
     }
+
 
     /**
      * Creates a new Event with the given {@code headers} and {@code data}.
@@ -46,10 +54,11 @@ public class Event<T> implements Serializable {
      *     The data
      */
     public Event(Headers headers, T data) {
-        this.headers = headers;
         this.key = data == null ? null : data.getClass();
+        this.headers = headers == null ? new Headers() : headers;
         this.data = data;
     }
+
 
     /**
      * Creates a new Event with the given {@code data}. The event will have empty headers.
@@ -58,9 +67,10 @@ public class Event<T> implements Serializable {
      *     The data
      */
     public Event(T data) {
-        this.key = data == null ? null : data.getClass();
+        this.headers = new Headers();
         this.data = data;
     }
+
 
     /**
      * Wrap the given object with an {@link Event}.
@@ -73,6 +83,40 @@ public class Event<T> implements Serializable {
     public static <T> Event<T> wrap(T obj) {
         return new Event<>(obj);
     }
+
+
+    /**
+     * Wrap the given object with an {@link Event} and set the {@link Event#getReplyTo() replyTo} to the given {@code
+     * replyToKey}.
+     *
+     * @param obj
+     *     The object to wrap.
+     * @param replyToKey
+     *     The key to use as a {@literal replyTo}.
+     * @param <T>
+     *     The type of the given object.
+     *
+     * @return The new {@link Event}.
+     */
+    public static <T> Event<T> wrap(T obj, Object replyToKey) {
+        return new Event<>(obj).setReplyTo(replyToKey);
+    }
+
+
+    /**
+     * Set the {@code key} that interested parties should send replies to.
+     *
+     * @param replyTo
+     *     The key to use to notify sender of replies.
+     *
+     * @return {@literal this}
+     */
+    public Event<T> setReplyTo(Object replyTo) {
+        Objects.requireNonNull(replyTo, "ReplyTo cannot be null.");
+        this.replyTo = replyTo;
+        return this;
+    }
+
 
     /**
      * Set the key this event is being notified with.
@@ -87,17 +131,40 @@ public class Event<T> implements Serializable {
         return this;
     }
 
+
     /**
-     * Set the internal data to wrap.
+     * Create a copy of this event, reusing same data and replyTo
      *
-     * @param data
-     *     Data to wrap.
-     *
-     * @return {@literal this}
+     * @return {@literal event copy}
      */
-    public Event<T> setData(T data) {
-        this.data = data;
-        return this;
+    public Event<T> copy() {
+        return copy(data);
+    }
+
+
+    /**
+     * Create a copy of this event, reusing same replyTo
+     *
+     * @return {@literal event copy}
+     */
+    public <E> Event<E> copy(E data) {
+        if (null != replyTo) {
+            return new Event<>( data).setReplyTo(replyTo);
+        } else {
+            return new Event<>(data);
+        }
+    }
+
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", headers=" + headers +
+                ", replyTo=" + replyTo +
+                ", key=" + key +
+                ", data=" + data +
+                '}';
     }
 
 
