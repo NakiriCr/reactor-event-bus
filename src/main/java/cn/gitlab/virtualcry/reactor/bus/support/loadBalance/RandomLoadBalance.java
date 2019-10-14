@@ -1,12 +1,13 @@
-package cn.gitlab.virtualcry.reactor.bus.util.loadBalance;
+package cn.gitlab.virtualcry.reactor.bus.support.loadBalance;
 
 import java.util.List;
 import java.util.Random;
 
 /**
- * Somethings
+ * Random strategy, according to the random number to get item.
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
 final class RandomLoadBalance implements LoadBalance {
 

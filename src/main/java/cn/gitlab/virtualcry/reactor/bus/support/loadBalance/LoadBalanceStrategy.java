@@ -1,9 +1,8 @@
-package cn.gitlab.virtualcry.reactor.bus.util.loadBalance;
+package cn.gitlab.virtualcry.reactor.bus.support.loadBalance;
 
 /**
- * Somethings
- *
  * @author VirtualCry
+ * @since 3.2.2
  */
 public enum LoadBalanceStrategy {
     ROUND_ROBIN, RANDOM

@@ -1,4 +1,4 @@
-package cn.gitlab.virtualcry.reactor.bus.util.loadBalance;
+package cn.gitlab.virtualcry.reactor.bus.support.loadBalance;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -6,9 +6,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Somethings
+ * Round-robin strategy, according to polling to get item.
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
 final class RoundRobinLoadBalance implements LoadBalance {
 
@@ -16,7 +17,7 @@ final class RoundRobinLoadBalance implements LoadBalance {
     private final Lock                                  writeLock;
     private final Map<Object, AtomicLong>               usageCounts;
 
-    RoundRobinLoadBalance() {
+    public RoundRobinLoadBalance() {
         ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
         this.readLock = readWriteLock.readLock();
         this.writeLock = readWriteLock.writeLock();
@@ -36,15 +37,15 @@ final class RoundRobinLoadBalance implements LoadBalance {
     private AtomicLong getUsageCount(Object key) {
         readLock.lock();
         try {
-            AtomicLong usageCount = this.usageCounts.get(key);
+            AtomicLong usageCount = usageCounts.get(key);
             if (usageCount == null) {
                 readLock.unlock();
                 writeLock.lock();
                 try {
-                    usageCount = this.usageCounts.get(key);
+                    usageCount = usageCounts.get(key);
                     if (usageCount == null) {
                         usageCount = new AtomicLong();
-                        this.usageCounts.put(key, usageCount);
+                        usageCounts.put(key, usageCount);
                     }
                 } finally {
                     writeLock.unlock();

@@ -1,13 +1,17 @@
-package cn.gitlab.virtualcry.reactor.bus.util.loadBalance;
+package cn.gitlab.virtualcry.reactor.bus.support.loadBalance;
 
 /**
  * Somethings
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
-public class LoadBalanceUtils {
+public abstract class LoadBalances {
 
-    public static LoadBalance createLoadBalance(LoadBalanceStrategy strategy) {
+    private LoadBalances() {
+    }
+
+    public static LoadBalance create(LoadBalanceStrategy strategy) {
         switch (strategy) {
             case ROUND_ROBIN:
                 return new RoundRobinLoadBalance();

@@ -1,13 +1,14 @@
-package cn.gitlab.virtualcry.reactor.bus.util.loadBalance;
+package cn.gitlab.virtualcry.reactor.bus.support.loadBalance;
 
 import java.util.List;
 
 /**
- * Somethings
+ * Without load balancing, take the first item.
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
-public class NonLoadBalance implements LoadBalance {
+final class NonLoadBalance implements LoadBalance {
 
     @Override
     public <T> T get(List<T> items, Object... args) {
