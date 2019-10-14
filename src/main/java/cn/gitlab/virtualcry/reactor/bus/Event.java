@@ -105,6 +105,15 @@ public class Event<T> implements Serializable {
 
 
     /**
+     * Get the key to send replies to.
+     *
+     * @return The reply-to key
+     */
+    public Object getReplyTo() {
+        return replyTo;
+    }
+
+    /**
      * Set the {@code key} that interested parties should send replies to.
      *
      * @param replyTo
