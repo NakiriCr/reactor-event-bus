@@ -1,7 +1,7 @@
 package cn.gitlab.virtualcry.reactor.bus.support.loadBalance;
 
 /**
- * Somethings
+ * A helper class for creating a new {@link LoadBalance}.
  *
  * @author VirtualCry
  * @since 3.2.2
