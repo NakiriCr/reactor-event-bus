@@ -8,10 +8,6 @@ import java.util.function.Consumer;
  */
 public abstract class Registries {
 
-    public static <K, V> Registry<K, V> create() {
-        return create(true, null, null, null);
-    }
-
     public static <K, V> Registry<K, V> create(Consumer<Registration<K, ? extends V>> onRegister,
                                                Consumer<Registration<K, ? extends V>> onUnregister) {
         return create(true, null, onRegister, onUnregister);

@@ -11,6 +11,9 @@ import java.util.List;
  * @param <K> the type of objects that can be matched
  * @param <V> the type of objects that can be registered
  *
+ * @author Jon Brisbin
+ * @author Andy Wilkinson
+ * @author Stephane Maldini
  * @author VirtualCry
  * @since 3.2.2
  */
@@ -46,8 +49,7 @@ public interface Registry<K, V> extends Iterable<Registration<K, ? extends V>> {
 
 
     /**
-     * Clear the {@link Registry}, resetting its state and calling {@link Registration#cancel()} for any active {@link
-     * Registration}.
+     * Clear the {@link Registry}, resetting its state.
      */
     void clear();
 }
