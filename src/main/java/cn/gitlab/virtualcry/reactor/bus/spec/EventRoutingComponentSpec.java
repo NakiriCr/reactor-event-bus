@@ -1,7 +1,6 @@
 package cn.gitlab.virtualcry.reactor.bus.spec;
 
 import cn.gitlab.virtualcry.reactor.bus.Event;
-import cn.gitlab.virtualcry.reactor.bus.EventBus;
 import cn.gitlab.virtualcry.reactor.bus.filter.*;
 import cn.gitlab.virtualcry.reactor.bus.registry.Registration;
 import cn.gitlab.virtualcry.reactor.bus.registry.Registries;
@@ -9,23 +8,17 @@ import cn.gitlab.virtualcry.reactor.bus.registry.Registry;
 import cn.gitlab.virtualcry.reactor.bus.routing.ConsumerFilteringRouter;
 import cn.gitlab.virtualcry.reactor.bus.routing.Router;
 import cn.gitlab.virtualcry.reactor.bus.routing.TraceableDelegatingRouter;
-import cn.gitlab.virtualcry.reactor.bus.support.Dispatcher;
-import cn.gitlab.virtualcry.reactor.bus.support.EventDispatcher;
-import cn.gitlab.virtualcry.reactor.bus.support.PayloadConsumer;
-import cn.gitlab.virtualcry.reactor.bus.util.loadBalance.LoadBalanceStrategy;
-import reactor.core.publisher.FluxProcessor;
+import lombok.Builder;
+import lombok.Getter;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
- * A generic environment-aware class for specifying components that need to be configured with a {@link FluxProcessor},
+ * A generic environment-aware class for specifying components that need to be configured with a {@link Registry},
  * and {@link Router}.
  *
  * @param <SPEC>
@@ -34,51 +27,83 @@ import java.util.stream.Collectors;
  * 		The type that this spec will create
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
 @SuppressWarnings("unchecked")
 public abstract class EventRoutingComponentSpec<SPEC extends
-		EventRoutingComponentSpec<SPEC, TARGET>, TARGET> extends DispatcherComponentSpec<SPEC, TARGET> {
+		EventRoutingComponentSpec<SPEC, TARGET>, TARGET> {
 
 	private EventRoutingStrategy  					eventRoutingStrategy;
+	private Scheduler 								eventConsumerScheduler;
 	private Scheduler 								routerScheduler;
 	private Router 									router;
 	private Filter                					eventFilter;
 	private Consumer<Throwable> 					dispatchErrorHandler;
-	private Registry<Object, PayloadConsumer<?>>	consumerRegistry;
+	private Registry<Object,
+			Consumer<? extends Event<?>>>			consumerRegistry;
 	private boolean 								traceEventPath = false;
 
 
-	public static final Consumer<Registration<Object, ? extends PayloadConsumer<?>>> ON_REGISTER = registration -> {
+	public static final Consumer<Registration<Object,
+			? extends Consumer<? extends Event<?>>>> ON_REGISTER = registration -> {
 		final Logger logger = Loggers.getLogger(Registry.class);
 		if (logger.isDebugEnabled())
-			logger.debug("Registered. - notify: {}, consumer: {}.",
-					registration.getSelector().getObject(),
-					registration.getObject().getId());
+			logger.debug("Registered. - selector: {}, consumer: {}.",
+					registration.getSelector(),
+					registration.getObject()
+			);
 	};
 
-	public static final Consumer<Registration<Object, ? extends PayloadConsumer<?>>> ON_UNREGISTER = registration -> {
+	public static final Consumer<Registration<Object,
+			? extends Consumer<? extends Event<?>>>> ON_UNREGISTER = registration -> {
 		final Logger logger = Loggers.getLogger(Registry.class);
 		if (logger.isDebugEnabled())
-			logger.debug("Unregistered. - notify: {}, consumer: {}.",
-					registration.getSelector().getObject(),
-					registration.getObject().getId());
+			logger.debug("Unregistered. - selector: {}, consumer: {}.",
+					registration.getSelector(),
+					registration.getObject()
+			);
 	};
 
 
 	/**
-	 * Configures the component to use the configured Environment's default dispatcher
+	 * Configures the component to use the default scheduler.
+	 *
+	 * @return {@code this}
+	 */
+	public final SPEC defaultEventConsumerScheduler() {
+		this.eventConsumerScheduler = Schedulers.newElastic("EventConsumer");
+		return (SPEC) this;
+	}
+
+
+	/**
+	 * Configures the component to use the given {@code eventConsumerScheduler}
+	 *
+	 * @param eventConsumerScheduler The scheduler to use
+	 *
+	 * @return {@code this}
+	 */
+	public final SPEC eventConsumerScheduler(Scheduler eventConsumerScheduler) {
+		this.eventConsumerScheduler = eventConsumerScheduler;
+		return (SPEC) this;
+	}
+
+
+	/**
+	 * Configures the component to use the default scheduler.
 	 *
 	 * @return {@code this}
 	 */
 	public final SPEC defaultRouterScheduler() {
-		this.routerScheduler = Schedulers.newElastic("EventRouter");
+		this.routerScheduler = Schedulers.immediate();
 		return (SPEC) this;
 	}
+
 
 	/**
 	 * Configures the component to use the given {@code routerScheduler}
 	 *
-	 * @param routerScheduler The dispatcher to use
+	 * @param routerScheduler The scheduler to use
 	 *
 	 * @return {@code this}
 	 */
@@ -94,11 +119,12 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 	 * @return {@code this}
 	 */
 	public final SPEC eventFilter(Filter filter) {
-		if (this.router == null)
+		if (router == null)
 			throw new IllegalArgumentException("Cannot set both a filter and a router. Use one or the other.");
 		this.eventFilter = filter;
 		return (SPEC) this;
 	}
+
 
 	/**
 	 * Assigns the component's EventRouter
@@ -106,11 +132,12 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 	 * @return {@code this}
 	 */
 	public final SPEC eventRouter(Router router) {
-		if (this.eventFilter == null)
+		if (eventFilter == null)
 			throw new IllegalArgumentException("Cannot set both a filter and a router. Use one or the other.");
 		this.router = router;
 		return (SPEC) this;
 	}
+
 
 	/**
 	 * Configures the component's EventRouter to broadcast events to all matching consumers
@@ -121,6 +148,7 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 		this.eventRoutingStrategy = EventRoutingStrategy.BROADCAST;
 		return (SPEC) this;
 	}
+
 
 	/**
 	 * Configures the component's EventRouter to route events to one consumer that's randomly selected from that matching
@@ -133,6 +161,7 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 		return (SPEC) this;
 	}
 
+
 	/**
 	 * Configures the component's EventRouter to route events to the first of the matching consumers
 	 *
@@ -142,6 +171,7 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 		this.eventRoutingStrategy = EventRoutingStrategy.FIRST;
 		return (SPEC) this;
 	}
+
 
 	/**
 	 * Configures the component's EventRouter to route events to one consumer selected from the matching consumers using a
@@ -154,6 +184,13 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 		return (SPEC) this;
 	}
 
+
+	/**
+	 * Configures the component's EventRouter to broadcast events to all matching consumers after
+	 * de-duplication.
+	 *
+	 * @return {@code this}
+	 */
 	public final SPEC deDuplicationEventRouting() {
 		this.eventRoutingStrategy = EventRoutingStrategy.DE_DUPLICATION;
 		return (SPEC) this;
@@ -183,6 +220,7 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 		return traceEventPath(true);
 	}
 
+
 	/**
 	 * Configures this component to provide or not provide event tracing when dispatching and routing an event.
 	 *
@@ -196,6 +234,7 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 		return (SPEC) this;
 	}
 
+
 	/**
 	 * Configures the {@link Registry} to use when creating this component. Registries can be
 	 * shared to reduce GC pressure and potentially be persisted across restarts.
@@ -205,10 +244,11 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 	 *
 	 * @return {@code this}
 	 */
-	public SPEC consumerRegistry(Registry<Object, PayloadConsumer<?>> consumerRegistry) {
+	public SPEC consumerRegistry(Registry<Object, Consumer<? extends Event<?>>> consumerRegistry) {
 		this.consumerRegistry = consumerRegistry;
 		return (SPEC) this;
 	}
+
 
 	/**
 	 * Configures the callback to invoke if a notification key is sent into this component and there are no consumers
@@ -224,76 +264,56 @@ public abstract class EventRoutingComponentSpec<SPEC extends
 		return (SPEC) this;
 	}
 
-	protected abstract TARGET configure(EventBus reactor);
 
-	@Override
-	protected final TARGET configure(List<FluxProcessor<Event<?>, Event<?>>> dispatcherProcessors,
-									 LoadBalanceStrategy loadBalanceStrategy) {
-		return this.configure(this.createReactor(dispatcherProcessors, loadBalanceStrategy));
-	}
-
-	private EventBus createReactor(List<FluxProcessor<Event<?>, Event<?>>> dispatcherProcessors,
-								   LoadBalanceStrategy loadBalanceStrategy) {
-		Registry<Object, PayloadConsumer<?>> consumerRegistry = Optional
-				.ofNullable(this.consumerRegistry)
-				.orElseGet(this::createRegistry);
-		Router router = Optional
-				.ofNullable(this.router)
-				.orElseGet(this::createEventRouter);
-		List<Dispatcher<Event<?>>> dispatchers = this.createEventDispatchers(
-				dispatcherProcessors,
-				consumerRegistry,
-				router
-		);
-		return new EventBus(
-				consumerRegistry,
-				dispatchers,
-				router,
-				dispatchErrorHandler,
-				loadBalanceStrategy
-		);
-	}
-
-	private List<Dispatcher<Event<?>>> createEventDispatchers(List<FluxProcessor<Event<?>, Event<?>>> dispatcherProcessors,
-															  Registry<Object, PayloadConsumer<?>> consumerRegistry,
-															  Router router) {
-		return dispatcherProcessors.stream()
-				.map(dispatcher ->
-						new EventDispatcher(dispatcher, consumerRegistry, router, dispatchErrorHandler)
-				)
-				.collect(Collectors.toList());
+	protected EventRoutingComponent createEventRoutingComponent() {
+		return EventRoutingComponent.builder()
+				.router(router != null ? router : createEventRouter())
+				.consumerRegistry(consumerRegistry != null ? consumerRegistry : createRegistry())
+				.dispatchErrorHandler(this.dispatchErrorHandler)
+				.build();
 	}
 
 	private Router createEventRouter() {
 		Router evr = new ConsumerFilteringRouter(
-				Optional.ofNullable(eventFilter)
-						.orElseGet(this::createFilter),
-				Optional.ofNullable(routerScheduler)
-						.orElseGet(() -> { defaultRouterScheduler(); return routerScheduler; })
+				eventFilter != null ? eventFilter : createFilter(),
+				routerScheduler != null ? routerScheduler : Schedulers.immediate(),
+				eventConsumerScheduler != null ? eventConsumerScheduler : Schedulers.newElastic("EventConsumer")
 		);
 		return traceEventPath ? new TraceableDelegatingRouter(evr) : evr;
 	}
 
 	private Filter createFilter() {
 		Filter filter;
-		if (EventRoutingStrategy.ROUND_ROBIN == eventRoutingStrategy) {
+		if (this.eventRoutingStrategy == EventRoutingStrategy.ROUND_ROBIN) {
 			filter = new RoundRobinFilter();
-		} else if (EventRoutingStrategy.RANDOM == eventRoutingStrategy) {
+		}
+		else if (this.eventRoutingStrategy == EventRoutingStrategy.RANDOM) {
 			filter = new RandomFilter();
-		} else if (EventRoutingStrategy.FIRST == eventRoutingStrategy) {
+		}
+		else if (this.eventRoutingStrategy == EventRoutingStrategy.FIRST) {
 			filter = new FirstFilter();
-		} else if (EventRoutingStrategy.DE_DUPLICATION == eventRoutingStrategy) {
+		}
+		else if (this.eventRoutingStrategy == EventRoutingStrategy.DE_DUPLICATION) {
 			filter = new DeDuplicationFilter();
-		} else {
+		}
+		else {
 			filter = new PassThroughFilter();
 		}
-		return (traceEventPath ? new TraceableDelegatingFilter(filter) : filter);
+		return (this.traceEventPath ? new TraceableDelegatingFilter(filter) : filter);
 	}
 
 	private Registry createRegistry() {
 		return Registries.create(true, null, ON_REGISTER, ON_UNREGISTER);
 	}
 
+
+	@Builder @Getter
+	protected static class EventRoutingComponent {
+		private Router									router;
+		private Registry<Object,
+				Consumer<? extends Event<?>>>			consumerRegistry;
+		private Consumer<Throwable> 					dispatchErrorHandler;
+	}
 
 	protected enum EventRoutingStrategy {
 		BROADCAST, RANDOM, ROUND_ROBIN, FIRST, DE_DUPLICATION

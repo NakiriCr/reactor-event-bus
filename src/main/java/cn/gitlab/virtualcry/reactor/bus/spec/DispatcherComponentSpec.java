@@ -1,19 +1,22 @@
 package cn.gitlab.virtualcry.reactor.bus.spec;
 
 import cn.gitlab.virtualcry.reactor.bus.Event;
-import cn.gitlab.virtualcry.reactor.bus.util.loadBalance.LoadBalanceStrategy;
-import reactor.core.publisher.*;
-import reactor.core.scheduler.Scheduler;
-import reactor.util.concurrent.Queues;
+import cn.gitlab.virtualcry.reactor.bus.EventBus;
+import cn.gitlab.virtualcry.reactor.bus.registry.Registry;
+import cn.gitlab.virtualcry.reactor.bus.routing.Router;
+import cn.gitlab.virtualcry.reactor.bus.dispatch.Dispatcher;
+import cn.gitlab.virtualcry.reactor.bus.dispatch.EventDispatcher;
+import cn.gitlab.virtualcry.reactor.bus.support.loadBalance.LoadBalanceStrategy;
+import reactor.core.publisher.FluxProcessor;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A generic environment-aware class for specifying components that need to be configured
- * with a {@link Scheduler}.
+ * with a {@link Dispatcher}.
  *
  * @param <SPEC>
  * 		The DispatcherComponentSpec subclass
@@ -21,88 +24,34 @@ import java.util.function.Supplier;
  * 		The type that this spec will create
  *
  * @author VirtualCry
+ * @since 3.2.2
  */
 @SuppressWarnings("unchecked")
-public abstract class DispatcherComponentSpec<SPEC extends DispatcherComponentSpec<SPEC, TARGET>, TARGET> implements Supplier<TARGET> {
+public abstract class DispatcherComponentSpec<SPEC extends
+        DispatcherComponentSpec<SPEC, TARGET>, TARGET> extends BuiltInDispatcherComponentSpec<SPEC, TARGET> implements Supplier<TARGET> {
 
-    private Class<? extends FluxProcessor>          dispatcherType;
     private List<FluxProcessor<Event<?>,
             Event<?>>>                              dispatchers;
     private LoadBalanceStrategy                     loadBalanceStrategy;
-    private int                                     dispatcherCount;
-
-
-    DispatcherComponentSpec() {
-        this.defaultDispatcher();
-        this.dispatcherCount = Runtime.getRuntime().availableProcessors();
-        this.loadBalanceStrategy = LoadBalanceStrategy.RANDOM;
-    }
 
 
     /**
-     * Configures the component to use the default dispatcher - {@link UnicastProcessor}.
+     * Configures the component to use the given {@code dispatchers}
+     *
+     * @param dispatchers The dispatchers to use
      *
      * @return {@code this}
      */
-    public final SPEC defaultDispatcher() {
-        this.unicastDispatcher();
-        return (SPEC) this;
-    }
-
-    /**
-     * Configures the component to use the dispatcher - {@link UnicastProcessor}.
-     *
-     * @return {@code this}
-     */
-    public final SPEC unicastDispatcher() {
-        this.dispatcherType = UnicastProcessor.class;
-        this.dispatchers = null;
-        return (SPEC) this;
-    }
-
-
-    /**
-     * Configures the component to use the dispatcher - {@link ReplayProcessor}.
-     *
-     * @return {@code this}
-     */
-    public final SPEC replayDispatcher() {
-        this.dispatcherType = ReplayProcessor.class;
-        this.dispatchers = null;
-        return (SPEC) this;
-    }
-
-    /**
-     * Configures the component to use the dispatcher - {@link TopicProcessor}.
-     *
-     * @return {@code this}
-     */
-    public final SPEC topicDispatcher() {
-        this.dispatcherType = TopicProcessor.class;
-        this.dispatchers = null;
-        return (SPEC) this;
-    }
-
-    /**
-     * Configures the component to use the dispatcher - {@link WorkQueueProcessor}.
-     *
-     * @return {@code this}
-     */
-    public final SPEC workQueueDispatcher() {
-        this.dispatcherType = WorkQueueProcessor.class;
-        this.dispatchers = null;
-        return (SPEC) this;
-    }
-
     public final SPEC dispatchers(List<FluxProcessor<Event<?>, Event<?>>> dispatchers) {
         this.dispatchers = dispatchers;
         return (SPEC) this;
     }
 
+
     /**
      * Configures the component to use the given {@code loadBalanceStrategy}.
      *
-     * @param loadBalanceStrategy Strategy to use
+     * @param loadBalanceStrategy The strategy to use
      *
      * @return {@code this}
      */
@@ -111,70 +60,38 @@ public abstract class DispatcherComponentSpec<SPEC extends DispatcherComponentSp
         return (SPEC) this;
     }
 
-    /**
-     * Configures the component to use the given {@code loadBalanceStrategy}.
-     *
-     * @param dispatcherCount Count to use
-     *
-     * @return {@code this}
-     */
-    public final SPEC dispatcherCount(int dispatcherCount) {
-        this.dispatcherCount = dispatcherCount;
-        return (SPEC) this;
-    }
-
 
     @Override
     public final TARGET get() {
-        return this.configure(
-                Optional.ofNullable(this.dispatchers)
-                        .orElseGet(this::createDispatchers),
-                Optional.ofNullable(this.loadBalanceStrategy)
-                        .orElse(LoadBalanceStrategy.RANDOM)
+        if (dispatchers != null && getDispatcherType() != null)
+            throw new IllegalArgumentException("Because both the dispatcher type and the dispatcher instances are set, " +
+                    "it is impossible to determine the type used for the dispatcher.");
+        return configure(createReactor(
+                dispatchers != null ? dispatchers : createBuiltInDispatchers(),
+                loadBalanceStrategy != null ? loadBalanceStrategy : LoadBalanceStrategy.RANDOM
+        ));
+    }
+
+
+    protected abstract TARGET configure(EventBus reactor);
+
+
+    private EventBus createReactor(List<FluxProcessor<Event<?>, Event<?>>> dispatcherProcessors,
+                                   LoadBalanceStrategy loadBalanceStrategy) {
+        EventRoutingComponent routingComponent  = super.createEventRoutingComponent();
+        Registry<Object, Consumer<? extends Event<?>>>
+                consumerRegistry                 = routingComponent.getConsumerRegistry();
+        Router router                            = routingComponent.getRouter();
+        Consumer<Throwable> dispatchErrorHandler = routingComponent.getDispatchErrorHandler();
+        List<Dispatcher<Event<?>>> dispatchers   = dispatcherProcessors.stream()
+                .map(dispatcher -> new EventDispatcher(dispatcher, consumerRegistry, router, dispatchErrorHandler))
+                .collect(Collectors.toList());
+        return new EventBus(
+                consumerRegistry,
+                dispatchers,
+                router,
+                dispatchErrorHandler,
+                loadBalanceStrategy
         );
     }
-
-    private List<FluxProcessor<Event<?>, Event<?>>> createDispatchers() {
-        List<FluxProcessor<Event<?>, Event<?>>> dispatchers = new ArrayList<>();
-        if (UnicastProcessor.class.equals(this.dispatcherType)) {
-            for (int i = 0; i < this.dispatcherCount; i++) {
-                dispatchers.add(
-                        UnicastProcessor.create()
-                );
-            }
-        }
-        else if (ReplayProcessor.class.equals(this.dispatcherType)) {
-            for (int i = 0; i < this.dispatcherCount; i++) {
-                dispatchers.add(
-                        ReplayProcessor.create(Queues.SMALL_BUFFER_SIZE, true)
-                );
-            }
-        }
-        else if (TopicProcessor.class.equals(this.dispatcherType)) {
-            for (int i = 0; i < this.dispatcherCount; i++) {
-                dispatchers.add(
-                        TopicProcessor.<Event<?>>builder()
-                                .bufferSize(Queues.SMALL_BUFFER_SIZE)
-                                .share(true)
-                                .autoCancel(false)
-                                .build()
-                );
-            }
-        }
-        else if (WorkQueueProcessor.class.equals(this.dispatcherType)) {
-            for (int i = 0; i < this.dispatcherCount; i++) {
-                dispatchers.add(
-                        WorkQueueProcessor.<Event<?>>builder()
-                                .bufferSize(Queues.SMALL_BUFFER_SIZE)
-                                .share(true)
-                                .autoCancel(false)
-                                .build()
-                );
-            }
-        }
-        return dispatchers;
-    }
-
-    protected abstract TARGET configure(List<FluxProcessor<Event<?>, Event<?>>> dispatcherProcessors,
-                                        LoadBalanceStrategy loadBalanceStrategy);
 }
