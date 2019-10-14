@@ -32,7 +32,7 @@ public class TraceableDelegatingRouter implements Router {
                                            List<Registration<Object, ? extends Consumer<? extends Event<?>>>> registrations,
                                            Consumer<Throwable> errorConsumer) {
         if(logger.isTraceEnabled())
-            logger.trace("route({}, {}, {}, {})", key, event, registrations, errorConsumer);
+            logger.trace("route({}, {}, {}, {})", key, event, registrations);
         delegate.route(key, event, registrations, errorConsumer);
     }
 }
