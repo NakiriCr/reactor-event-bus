@@ -103,7 +103,7 @@ public class UriPathTemplate {
 			return pathParameters;
 		}
 
-		pathParameters = new HashMap<String, Object>();
+		pathParameters = new HashMap<>();
 		Matcher m = matcher(uri);
 		if (m.matches()) {
 			int i = 1;
