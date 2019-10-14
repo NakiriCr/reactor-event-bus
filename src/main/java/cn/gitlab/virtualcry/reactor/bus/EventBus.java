@@ -226,8 +226,7 @@ public class EventBus implements Bus<Event<?>>, Consumer<Event<?>> {
     public final EventBus notify(@NonNull final Publisher<?> source, @NonNull final Object key) {
         return notify(source, mapper -> key);
     }
-
-
+    
     /**
      * Pass values accepted by this {@code Stream} into the given {@link Bus}, notifying with the given key.
      *
@@ -241,7 +240,6 @@ public class EventBus implements Bus<Event<?>>, Consumer<Event<?>> {
         return this;
     }
 
-
     /**
      * Notify this component that the given {@link Supplier} can provide an event that's ready to be
      * processed.
@@ -254,7 +252,6 @@ public class EventBus implements Bus<Event<?>>, Consumer<Event<?>> {
     public EventBus notify(Object key, Supplier<? extends Event> supplier) {
         return notify(key, supplier.get());
     }
-
 
     /**
      * Notify this component that the consumers registered with a {@link Selector} that matches the {@code key} should be
@@ -326,7 +323,6 @@ public class EventBus implements Bus<Event<?>>, Consumer<Event<?>> {
         on(sel, reply).cancelAfterUse();
         return notify(key, event.setReplyTo(sel.getObject()));
     }
-
 
     /**
      * Register the given {@link Consumer} on an anonymous {@link Selector} and
