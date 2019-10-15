@@ -7,7 +7,7 @@
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/snapshots/https/oss.sonatype.org/com.github.virtualcry/reactor-event-bus.svg)
 
 ## Introduction
-In order to support `Reactor3.X or higher`, the event bus is migrated and re implemented based on the design of `reactor-bus`.
+In order to support `Reactor3.X or higher`, the event bus is migrated and re-implemented based on the design of `reactor-bus`.
 
 ## Data Routing
 <br><br>
