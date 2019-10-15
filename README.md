@@ -7,8 +7,9 @@
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/snapshots/https/oss.sonatype.org/com.github.virtualcry/reactor-event-bus.svg)
 
 ## Introduction
-Event bus is a centralized event processing mechanism and an implementation of publish-subscribe mode.
-It allows different components to communicate with each other without interdependence and achieves decoupling between components.
+In order to support `Reactor3.X or higher`, the event bus is migrated and re implemented based on the design of `reactor-bus`.
+
+## Data Routing
 <br><br>
 ![avatar](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/raw/master/images/data-routing.svg)
 
@@ -16,3 +17,6 @@ It allows different components to communicate with each other without interdepen
 * Adapt to `Reactor3.X`
 * Senseless communication
 * ...
+
+## How to Use
+* [See the docs](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/wikis/home "See the docs")
