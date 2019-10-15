@@ -9,7 +9,7 @@
 ## Introduction
 In order to support `Reactor3.X or higher`, the event bus is migrated and re-implemented based on the design of `reactor-bus`.
 
-## Data Routing
+## Routing Data
 <br><br>
 ![avatar](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/raw/master/images/data-routing.svg)
 
@@ -17,8 +17,8 @@ In order to support `Reactor3.X or higher`, the event bus is migrated and re-imp
 * Adapt to `Reactor3.X`
 * Non-blocking consume events
 * Multiple primary key matching patterns
-* Subscription and publishing mode
-* Request and response mode
+* Publish/Subscribe
+* Request/Reply
 * ...
 
 ## How to Use
