@@ -15,7 +15,10 @@ In order to support `Reactor3.X or higher`, the event bus is migrated and re imp
 
 ## Features
 * Adapt to `Reactor3.X`
-* Senseless communication
+* Non-blocking consume events
+* Multiple primary key matching patterns
+* Subscription and publishing mode
+* Request and response mode
 * ...
 
 ## How to Use
