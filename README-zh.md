@@ -7,7 +7,7 @@
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/snapshots/https/oss.sonatype.org/com.github.virtualcry/reactor-event-bus.svg)
 
 ## 简介
-基于`Reactor`的事件总线实现，沿用`reactor-bus`的设计，移植和重实现。
+为支持更高版本的`Reactor`，基于`reactor-bus`的设计，移植和重实现事件总线。
 
 ## 数据路由 
 <br><br>
