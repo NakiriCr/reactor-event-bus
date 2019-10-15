@@ -22,4 +22,4 @@
 * ...
 
 ## 如何使用
-* [查看文档](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/wikis/home "查看文档") 
+* [查看文档](https://gitlab.yanzx-dev.cn/reactor/reactor-event-bus/wikis/home "查看文档")
